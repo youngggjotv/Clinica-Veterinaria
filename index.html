@@ -3,83 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vet Agenda - Clínica Veterinaria Huellitas</title>
+    <title>Agenda de Citas - Clínica Veterinaria</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Vet Agenda - Clínica Veterinaria Huellitas</h1>
-        <p>Prototipo de Evaluación 3: Gestión de Citas y Prevención de Solapamientos</p>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="#" aria-label="Clínica Veterinaria Huellitas">
+                <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+                    <ellipse cx="16" cy="21" rx="7.5" ry="6"/>
+                    <ellipse cx="7" cy="14" rx="3" ry="3.8" transform="rotate(-18 7 14)"/>
+                    <ellipse cx="12.5" cy="8.5" rx="3" ry="4" transform="rotate(-6 12.5 8.5)"/>
+                    <ellipse cx="19.5" cy="8.5" rx="3" ry="4" transform="rotate(6 19.5 8.5)"/>
+                    <ellipse cx="25" cy="14" rx="3" ry="3.8" transform="rotate(18 25 14)"/>
+                </svg>
+                <span class="brand-text">
+                    <strong>Agenda de Citas</strong>
+                    <small>Clínica Veterinaria</small>
+                </span>
+            </a>
+            <p class="topbar-note">Prototipo de Evaluación 3</p>
+        </div>
     </header>
 
-    <main>
-        <section class="form-section">
-            <h2>Registrar Tutor y Mascota (KAN-18)</h2>
-            <form id="registro-form">
-                <div class="form-group">
-                    <label for="tutor">Nombre del Tutor:</label>
-                    <input type="text" id="tutor" required>
-                </div>
-                <div class="form-group">
-                    <label for="mascota">Nombre de la Mascota:</label>
-                    <input type="text" id="mascota" required>
-                </div>
-                <button type="submit">Registrar Paciente</button>
-            </form>
-        </section>
-
-        <section class="form-section">
-            <h2>Agendar Cita (KAN-19)</h2>
-            <form id="agenda-form">
-                <div class="form-group">
-                    <label for="select-paciente">Paciente (Mascota - Tutor):</label>
-                    <select id="select-paciente" required>
-                        <option value="">Seleccione un paciente...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="veterinario">Veterinario/a:</label>
-                    <select id="veterinario" required>
-                        <option value="Vet 1">Veterinario 1</option>
-                        <option value="Vet 2">Veterinario 2</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" required>
-                </div>
-                <div class="form-group">
-                    <label for="hora">Hora:</label>
-                    <input type="time" id="hora" required>
-                </div>
-                <button type="submit">Agendar Cita</button>
-                <p id="mensaje-validacion" class="mensaje"></p>
-            </form>
-        </section>
-
-        <section class="agenda-section">
-            <h2>Agenda Diaria por Veterinario (KAN-20)</h2>
-            <div class="filtros">
-                <label for="filtro-fecha">Filtrar por Fecha:</label>
-                <input type="date" id="filtro-fecha">
-                <button id="btn-filtrar">Ver Agenda</button>
+    <main class="page">
+        <section class="intro">
+            <div>
+                <p class="hand">¡Bienvenido!</p>
+                <h1>Agenda de la clínica</h1>
+                <p class="fecha-hoy" id="fecha-hoy"></p>
+                <p class="lead">Gestión de citas con prevención de solapamientos: cada cita dura 30 minutos y un veterinario no puede tener dos pacientes a la vez.</p>
             </div>
-            <table id="tabla-agenda">
-                <thead>
-                    <tr>
-                        <th>Hora</th>
-                        <th>Veterinario</th>
-                        <th>Paciente (Mascota)</th>
-                        <th>Tutor</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Las citas se generarán dinámicamente aquí -->
-                </tbody>
-            </table>
+            <ul class="stats" aria-label="Resumen">
+                <li><span class="stat-num" id="stat-hoy">0</span><span class="stat-label">citas hoy</span></li>
+                <li><span class="stat-num" id="stat-total">0</span><span class="stat-label">citas en total</span></li>
+                <li><span class="stat-num" id="stat-pacientes">0</span><span class="stat-label">pacientes</span></li>
+            </ul>
         </section>
+
+        <div class="layout">
+            <aside class="side">
+                <section class="card">
+                    <header class="card-head">
+                        <span class="tag">KAN-18</span>
+                        <h2>Registrar tutor y mascota</h2>
+                    </header>
+                    <form id="registro-form">
+                        <div class="form-group">
+                            <label for="tutor">Nombre del tutor</label>
+                            <input type="text" id="tutor" placeholder="Ej: Camila Rojas" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mascota">Nombre de la mascota</label>
+                            <input type="text" id="mascota" placeholder="Ej: Canela" autocomplete="off" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar paciente</button>
+                    </form>
+                </section>
+
+                <section class="card">
+                    <header class="card-head">
+                        <span class="tag">KAN-19</span>
+                        <h2>Agendar cita</h2>
+                    </header>
+                    <form id="agenda-form">
+                        <div class="form-group">
+                            <label for="select-paciente">Paciente (mascota - tutor)</label>
+                            <select id="select-paciente" required>
+                                <option value="">Seleccione un paciente...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="veterinario">Veterinario/a</label>
+                            <select id="veterinario" required>
+                                <option value="Vet 1">Veterinario/a Jose Lagos</option>
+                                <option value="Vet 2">Veterinario/a Maria Rodriguez</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fecha">Fecha</label>
+                                <input type="date" id="fecha" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hora">Hora</label>
+                                <select id="hora" required>
+                                    <option value="">Elige una fecha primero</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="hint">Atención: lunes a viernes de 09:00 a 13:00 y de 14:00 a 18:00, sábados de 10:00 a 14:00. Cada cita dura 30 minutos. Domingos cerrado.</p>
+                        <button type="submit" class="btn btn-primary">Agendar cita</button>
+                        <p id="mensaje-validacion" class="mensaje" role="status" aria-live="polite"></p>
+                    </form>
+                </section>
+            </aside>
+
+            <section class="card agenda">
+                <header class="card-head card-head-split">
+                    <div>
+                        <span class="tag">KAN-20</span>
+                        <h2>Agenda diaria por veterinario</h2>
+                    </div>
+                    <div class="filtros">
+                        <label for="filtro-fecha">Fecha</label>
+                        <input type="date" id="filtro-fecha">
+                        <button id="btn-filtrar" class="btn btn-ghost" type="button">Ver agenda</button>
+                    </div>
+                </header>
+
+                <div class="tabla-wrap">
+                    <table id="tabla-agenda">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Veterinario</th>
+                                <th>Paciente (mascota)</th>
+                                <th>Tutor</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las citas se generarán dinámicamente aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </main>
+
+    <footer class="footer">
+        <p>Clínica Veterinaria · Agenda de Citas</p>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
 </body>
 </html>
