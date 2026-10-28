@@ -119,9 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const hoy = fechaLocalISO();
 
     // Fecha de hoy en el encabezado
-    document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-CL', {
+    const textoFecha = new Date().toLocaleDateString('es-CL', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     });
+    // Solo la primera letra en mayúscula ("Miércoles, 28 de octubre de 2026")
+    document.getElementById('fecha-hoy').textContent = textoFecha.charAt(0).toUpperCase() + textoFecha.slice(1);
 
     // Fecha actual por defecto en el filtro y en el formulario de cita
     document.getElementById('filtro-fecha').value = hoy;
@@ -253,6 +255,7 @@ function renderizarAgenda() {
 
     if (citasFiltradas.length === 0) {
         const tr = document.createElement('tr');
+        tr.className = 'fila-vacia';
         const td = document.createElement('td');
         td.colSpan = 5;
         td.className = 'vacio';
@@ -264,13 +267,15 @@ function renderizarAgenda() {
 
     citasFiltradas.forEach(cita => {
         const tr = document.createElement('tr');
-        const claseVet = cita.veterinario === 'Vet 2' ? 'badge-vet2' : 'badge-vet1';
+        const esVet2 = cita.veterinario === 'Vet 2';
+        const claseVet = esVet2 ? 'badge-vet2' : 'badge-vet1';
+        tr.className = esVet2 ? 'fila-vet2' : 'fila-vet1';
 
         tr.appendChild(crearCelda('Hora', cita.hora, 'hora'));
-        tr.appendChild(crearCelda('Veterinario', crearBadge(cita.veterinario, claseVet)));
+        tr.appendChild(crearCelda('Veterinario', crearBadge(cita.veterinario, claseVet), 'celda-vet'));
         tr.appendChild(crearCelda('Paciente', cita.mascota, 'mascota'));
-        tr.appendChild(crearCelda('Tutor', cita.tutor));
-        tr.appendChild(crearCelda('Estado', crearBadge(cita.estado, 'badge-estado')));
+        tr.appendChild(crearCelda('Tutor', cita.tutor, 'celda-tutor'));
+        tr.appendChild(crearCelda('Estado', crearBadge(cita.estado, 'badge-estado'), 'celda-estado'));
         tbody.appendChild(tr);
     });
 }
@@ -282,3 +287,26 @@ function actualizarResumen() {
     document.getElementById('stat-total').textContent = citas.length;
     document.getElementById('stat-pacientes').textContent = pacientes.length;
 }
+
+// Navegación inferior (solo se ve en celular; en escritorio todo está a la vista)
+const botonesNav = document.querySelectorAll('.bottom-nav button');
+
+function mostrarVista(vista) {
+    document.body.dataset.vista = vista;
+    botonesNav.forEach(boton => {
+        const activo = boton.dataset.vista === vista;
+        boton.classList.toggle('activo', activo);
+        if (activo) {
+            boton.setAttribute('aria-current', 'page');
+        } else {
+            boton.removeAttribute('aria-current');
+        }
+    });
+    window.scrollTo({ top: 0 });
+}
+
+botonesNav.forEach(boton => {
+    boton.addEventListener('click', () => mostrarVista(boton.dataset.vista));
+});
+
+mostrarVista('agenda');
