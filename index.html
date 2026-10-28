@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2f5d50">
     <title>Agenda de Citas - Clínica Veterinaria</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +47,7 @@
 
         <div class="layout">
             <aside class="side">
-                <section class="card">
+                <section class="card" data-vista="registro">
                     <header class="card-head">
                         <span class="tag">KAN-18</span>
                         <h2>Registrar tutor y mascota</h2>
@@ -64,7 +65,7 @@
                     </form>
                 </section>
 
-                <section class="card">
+                <section class="card" data-vista="agendar">
                     <header class="card-head">
                         <span class="tag">KAN-19</span>
                         <h2>Agendar cita</h2>
@@ -102,7 +103,7 @@
                 </section>
             </aside>
 
-            <section class="card agenda">
+            <section class="card agenda" data-vista="agenda">
                 <header class="card-head card-head-split">
                     <div>
                         <span class="tag">KAN-20</span>
@@ -138,6 +139,22 @@
     <footer class="footer">
         <p>Clínica Veterinaria · Agenda de Citas</p>
     </footer>
+
+    <!-- Navegación inferior: solo se muestra en celular -->
+    <nav class="bottom-nav" aria-label="Secciones">
+        <button type="button" data-vista="agenda">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            Agenda
+        </button>
+        <button type="button" data-vista="agendar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            Agendar
+        </button>
+        <button type="button" data-vista="registro">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+            Pacientes
+        </button>
+    </nav>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
