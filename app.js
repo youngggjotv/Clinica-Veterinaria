@@ -1,21 +1,19 @@
-// Inicialización de LocalStorage
-let pacientes = JSON.parse(localStorage.getItem('pacientes')) || [];
+// Base de datos local simulando el modelo relacional (UML)
+let tutores = JSON.parse(localStorage.getItem('tutores')) || [];
+let mascotas = JSON.parse(localStorage.getItem('mascotas')) || [];
 let citas = JSON.parse(localStorage.getItem('citas')) || [];
 
-// ---------- Horario de atención (Chile) ----------
-// Lunes a viernes: 09:00-13:00 y 14:00-18:00 (colación de 13:00 a 14:00)
-// Sábado: 10:00-14:00 | Domingo: cerrado
-// Para cambiar el horario basta con editar estas constantes.
-const DURACION_CITA = 30; // minutos que dura cada cita
+// Diccionario estático de Veterinarios según UML
+const VETERINARIOS = {
+    "1": { id_veterinario: "1", nombre: "Jose Lagos" },
+    "2": { id_veterinario: "2", nombre: "Maria Rodriguez" }
+};
+
+const DURACION_CITA = 30; // minutos
 const TRAMOS_SEMANA = [['09:00', '13:00'], ['14:00', '18:00']];
 const HORARIO_ATENCION = {
-    0: [],                      // domingo
-    1: TRAMOS_SEMANA,           // lunes
-    2: TRAMOS_SEMANA,
-    3: TRAMOS_SEMANA,
-    4: TRAMOS_SEMANA,
-    5: TRAMOS_SEMANA,           // viernes
-    6: [['10:00', '14:00']]     // sábado
+    0: [], 1: TRAMOS_SEMANA, 2: TRAMOS_SEMANA, 3: TRAMOS_SEMANA,
+    4: TRAMOS_SEMANA, 5: TRAMOS_SEMANA, 6: [['10:00', '14:00']]
 };
 
 function aMinutos(hora) {
@@ -29,13 +27,11 @@ function aHora(minutos) {
     return `${h}:${m}`;
 }
 
-// Día de la semana de una fecha 'YYYY-MM-DD' en hora local (0 = domingo)
 function diaSemana(fechaISO) {
     const [y, m, d] = fechaISO.split('-').map(Number);
     return new Date(y, m - 1, d).getDay();
 }
 
-// Bloques de 30 min en los que la clínica atiende ese día
 function bloquesDelDia(fechaISO) {
     if (!fechaISO) return [];
     const tramos = HORARIO_ATENCION[diaSemana(fechaISO)] || [];
@@ -48,21 +44,19 @@ function bloquesDelDia(fechaISO) {
     return bloques;
 }
 
-// Busca una cita del mismo veterinario y día a menos de 30 min de la hora pedida
-// (incluye la misma hora, así que también cubre el solapamiento exacto)
-function buscarConflicto(veterinario, fecha, hora) {
-    return citas.find(c =>
-        c.veterinario === veterinario &&
-        c.fecha === fecha &&
-        Math.abs(aMinutos(c.hora) - aMinutos(hora)) < DURACION_CITA
+// Verifica solapamiento usando fecha_hora_inicio
+function buscarConflicto(id_veterinario, fecha, hora) {
+    const fechaHoraBuscada = `${fecha}T${hora}`;
+    return citas.find(c => 
+        c.id_veterinario === id_veterinario && 
+        c.fecha_hora_inicio === fechaHoraBuscada
     );
 }
 
-// Llena el selector de horas con los bloques del día y marca los ocupados
 function actualizarHorasDisponibles() {
     const select = document.getElementById('hora');
     const fecha = document.getElementById('fecha').value;
-    const veterinario = document.getElementById('veterinario').value;
+    const id_veterinario = document.getElementById('veterinario').value;
     const anterior = select.value;
     select.innerHTML = '';
 
@@ -82,14 +76,13 @@ function actualizarHorasDisponibles() {
     select.disabled = false;
     select.add(new Option('Elige una hora...', ''));
     bloques.forEach(hora => {
-        const ocupado = buscarConflicto(veterinario, fecha, hora);
+        const ocupado = buscarConflicto(id_veterinario, fecha, hora);
         const opcion = new Option(ocupado ? `${hora} · ocupado` : hora, hora);
         opcion.disabled = Boolean(ocupado);
         select.add(opcion);
     });
 
-    // Si la hora elegida antes sigue libre, se conserva
-    if (bloques.includes(anterior) && !buscarConflicto(veterinario, fecha, anterior)) {
+    if (bloques.includes(anterior) && !buscarConflicto(id_veterinario, fecha, anterior)) {
         select.value = anterior;
     }
 }
@@ -97,7 +90,6 @@ function actualizarHorasDisponibles() {
 document.getElementById('fecha').addEventListener('change', actualizarHorasDisponibles);
 document.getElementById('veterinario').addEventListener('change', actualizarHorasDisponibles);
 
-// Fecha de hoy en hora local (toISOString usa UTC y puede dar el día siguiente de noche)
 function fechaLocalISO(fecha = new Date()) {
     const y = fecha.getFullYear();
     const m = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -105,7 +97,6 @@ function fechaLocalISO(fecha = new Date()) {
     return `${y}-${m}-${d}`;
 }
 
-// Aviso flotante (reemplaza al alert)
 let toastTimer;
 function mostrarToast(texto) {
     const toast = document.getElementById('toast');
@@ -117,89 +108,103 @@ function mostrarToast(texto) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const hoy = fechaLocalISO();
-
-    // Fecha de hoy en el encabezado
-    const textoFecha = new Date().toLocaleDateString('es-CL', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
-    // Solo la primera letra en mayúscula ("Miércoles, 28 de octubre de 2026")
+    const textoFecha = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('fecha-hoy').textContent = textoFecha.charAt(0).toUpperCase() + textoFecha.slice(1);
-
-    // Fecha actual por defecto en el filtro y en el formulario de cita
+    
     document.getElementById('filtro-fecha').value = hoy;
     document.getElementById('fecha').value = hoy;
 
     actualizarHorasDisponibles();
-    actualizarSelectPacientes();
+    actualizarSelectMascotas();
     renderizarAgenda();
     actualizarResumen();
 });
 
-// Registrar Tutor y Mascota
+// Registro de Entidades separadas (Tutor y Mascota) según UML
 document.getElementById('registro-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const tutor = document.getElementById('tutor').value.trim();
-    const mascota = document.getElementById('mascota').value.trim();
+    
+    // Crear entidad Tutor
+    const nuevoTutor = {
+        id_tutor: "TUT-" + Date.now(),
+        nombre: document.getElementById('tutor_nombre').value.trim(),
+        correo: document.getElementById('tutor_correo').value.trim(),
+        telefono: document.getElementById('tutor_telefono').value.trim(),
+        consentimiento: document.getElementById('tutor_consentimiento').checked
+    };
+    
+    // Crear entidad Mascota vinculada al Tutor
+    const nuevaMascota = {
+        id_mascota: "MAS-" + Date.now(),
+        id_tutor: nuevoTutor.id_tutor, // Clave foránea
+        nombre: document.getElementById('mascota_nombre').value.trim(),
+        especie: document.getElementById('mascota_especie').value
+    };
 
-    const nuevoPaciente = { id: Date.now(), tutor, mascota };
-    pacientes.push(nuevoPaciente);
-    localStorage.setItem('pacientes', JSON.stringify(pacientes));
+    tutores.push(nuevoTutor);
+    mascotas.push(nuevaMascota);
+    
+    localStorage.setItem('tutores', JSON.stringify(tutores));
+    localStorage.setItem('mascotas', JSON.stringify(mascotas));
 
-    mostrarToast(`${mascota} (tutor: ${tutor}) quedó registrado.`);
+    mostrarToast(`Mascota ${nuevaMascota.nombre} y su tutor ${nuevoTutor.nombre} registrados.`);
     this.reset();
-    actualizarSelectPacientes();
+    actualizarSelectMascotas();
     actualizarResumen();
 });
 
-// Actualizar lista desplegable de pacientes
-function actualizarSelectPacientes() {
-    const select = document.getElementById('select-paciente');
-    select.innerHTML = '<option value="">Seleccione un paciente...</option>';
-    pacientes.forEach(p => {
+// Actualizar lista desplegable usando la entidad Mascota
+function actualizarSelectMascotas() {
+    const select = document.getElementById('select-mascota');
+    select.innerHTML = '<option value="">Seleccione una mascota...</option>';
+    mascotas.forEach(m => {
+        // Buscar el tutor asociado mediante la clave foránea
+        const tutor = tutores.find(t => t.id_tutor === m.id_tutor);
+        const tutorNombre = tutor ? tutor.nombre : "Sin tutor";
+        
         const option = document.createElement('option');
-        option.value = p.id;
-        option.textContent = `${p.mascota} - ${p.tutor}`;
+        option.value = m.id_mascota;
+        option.textContent = `${m.nombre} (${m.especie}) - Tutor: ${tutorNombre}`;
         select.appendChild(option);
     });
 }
 
-// Agendar Cita y aplicar Regla de Negocio (Prevención de Solapamiento)
+// Agendar Cita construyendo entidad Cita según UML
 document.getElementById('agenda-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const pacienteId = document.getElementById('select-paciente').value;
-    const veterinario = document.getElementById('veterinario').value;
+    const id_mascota = document.getElementById('select-mascota').value;
+    const id_veterinario = document.getElementById('veterinario').value;
+    const tipo = document.getElementById('cita_tipo').value;
     const fecha = document.getElementById('fecha').value;
     const hora = document.getElementById('hora').value;
     const mensajeEl = document.getElementById('mensaje-validacion');
 
-    // Regla de negocio 1: la hora debe estar dentro del horario de atención
     if (!hora || !bloquesDelDia(fecha).includes(hora)) {
-        mensajeEl.textContent = "Error: Seleccione una hora dentro del horario de atención de la clínica.";
+        mensajeEl.textContent = "Error: Seleccione una hora dentro del horario.";
         mensajeEl.className = "mensaje error";
-        return; // Cita rechazada: fuera de horario
+        return; 
     }
 
-    // Regla de negocio 2: Verificar solapamiento (Caso de rechazo o dato inválido para EV3)
-    // Cada cita dura 30 min, así que el veterinario no puede tener otra a menos de 30 min
-    const solapamiento = buscarConflicto(veterinario, fecha, hora);
-
-    if (solapamiento) {
-        mensajeEl.textContent = "Error: El veterinario ya tiene una cita agendada en ese horario (cada cita dura 30 minutos). Por favor, seleccione otro.";
+    if (buscarConflicto(id_veterinario, fecha, hora)) {
+        mensajeEl.textContent = "Error: El veterinario ya tiene una cita agendada en ese horario.";
         mensajeEl.className = "mensaje error";
         actualizarHorasDisponibles();
-        return; // Detiene la ejecución, cita rechazada
+        return; 
     }
 
-    // Si no hay solapamiento, crear cita (Caso exitoso para EV3)
-    const paciente = pacientes.find(p => p.id == pacienteId);
+    // Calcular fechas y horas estructuradas
+    const fecha_hora_inicio = `${fecha}T${hora}`;
+    const horaFinCalculada = aHora(aMinutos(hora) + DURACION_CITA);
+    const fecha_hora_fin = `${fecha}T${horaFinCalculada}`;
+
+    // Entidad Cita
     const nuevaCita = {
-        id: Date.now(),
-        pacienteId,
-        mascota: paciente.mascota,
-        tutor: paciente.tutor,
-        veterinario,
-        fecha,
-        hora,
+        id_cita: "CIT-" + Date.now(),
+        id_mascota: id_mascota,
+        id_veterinario: id_veterinario,
+        fecha_hora_inicio: fecha_hora_inicio,
+        fecha_hora_fin: fecha_hora_fin,
+        tipo: tipo,
         estado: 'Agendada'
     };
 
@@ -209,20 +214,18 @@ document.getElementById('agenda-form').addEventListener('submit', function(e) {
     mensajeEl.textContent = "Cita agendada con éxito.";
     mensajeEl.className = "mensaje success";
     this.reset();
-    document.getElementById('fecha').value = fecha; // se mantiene el día para agendar varias seguidas
-    actualizarHorasDisponibles(); // la hora recién tomada queda marcada como ocupada
+    document.getElementById('fecha').value = fecha; 
+    actualizarHorasDisponibles(); 
 
-    // Si la cita es de otro día, mostrar la agenda de ese día
     document.getElementById('filtro-fecha').value = fecha;
     renderizarAgenda();
     actualizarResumen();
 });
 
-// Filtrar y ver la agenda diaria
+// Renderizado de la agenda resolviendo las relaciones (Joins locales)
 document.getElementById('btn-filtrar').addEventListener('click', renderizarAgenda);
 document.getElementById('filtro-fecha').addEventListener('change', renderizarAgenda);
 
-// Crea una celda con su etiqueta (se usa en la vista móvil)
 function crearCelda(etiqueta, contenido, clase) {
     const td = document.createElement('td');
     td.dataset.label = etiqueta;
@@ -247,66 +250,61 @@ function renderizarAgenda() {
     const fechaFiltro = document.getElementById('filtro-fecha').value;
     tbody.innerHTML = '';
 
-    // Consultar datos filtrando por fecha (copia para no alterar el arreglo original)
-    let citasFiltradas = fechaFiltro ? citas.filter(c => c.fecha === fechaFiltro) : [...citas];
+    // Filtrar citas comparando la parte de la fecha del ISO string
+    let citasFiltradas = fechaFiltro ? citas.filter(c => c.fecha_hora_inicio.startsWith(fechaFiltro)) : [...citas];
 
-    // Ordenar por hora
-    citasFiltradas.sort((a, b) => a.hora.localeCompare(b.hora));
+    // Ordenar por hora de inicio
+    citasFiltradas.sort((a, b) => a.fecha_hora_inicio.localeCompare(b.fecha_hora_inicio));
 
     if (citasFiltradas.length === 0) {
-        const tr = document.createElement('tr');
-        tr.className = 'fila-vacia';
-        const td = document.createElement('td');
-        td.colSpan = 5;
-        td.className = 'vacio';
-        td.innerHTML = '<strong>Día tranquilo por ahora</strong>No hay citas agendadas para esta fecha.';
-        tr.appendChild(td);
-        tbody.appendChild(tr);
+        tbody.innerHTML = `<tr class="fila-vacia"><td colspan="5" class="vacio"><strong>Día tranquilo</strong>No hay citas agendadas.</td></tr>`;
         return;
     }
 
     citasFiltradas.forEach(cita => {
         const tr = document.createElement('tr');
-        const esVet2 = cita.veterinario === 'Vet 2';
+        
+        // Resolver relaciones
+        const veterinarioObj = VETERINARIOS[cita.id_veterinario];
+        const nombreVet = veterinarioObj ? veterinarioObj.nombre : "Desconocido";
+        
+        const mascotaObj = mascotas.find(m => m.id_mascota === cita.id_mascota) || {};
+        
+        // Formatear visualización de hora
+        const horaInicioStr = cita.fecha_hora_inicio.split('T')[1];
+        const horaFinStr = cita.fecha_hora_fin.split('T')[1];
+        const horarioMuestra = `${horaInicioStr} - ${horaFinStr}`;
+
+        const esVet2 = cita.id_veterinario === '2';
         const claseVet = esVet2 ? 'badge-vet2' : 'badge-vet1';
         tr.className = esVet2 ? 'fila-vet2' : 'fila-vet1';
 
-        tr.appendChild(crearCelda('Hora', cita.hora, 'hora'));
-        tr.appendChild(crearCelda('Veterinario', crearBadge(cita.veterinario, claseVet), 'celda-vet'));
-        tr.appendChild(crearCelda('Paciente', cita.mascota, 'mascota'));
-        tr.appendChild(crearCelda('Tutor', cita.tutor, 'celda-tutor'));
+        tr.appendChild(crearCelda('Horario', horarioMuestra, 'hora'));
+        tr.appendChild(crearCelda('Veterinario', crearBadge(nombreVet, claseVet), 'celda-vet'));
+        tr.appendChild(crearCelda('Paciente', `${mascotaObj.nombre || '?'} (${mascotaObj.especie || '?'})`, 'mascota'));
+        tr.appendChild(crearCelda('Tipo', cita.tipo, 'celda-tipo'));
         tr.appendChild(crearCelda('Estado', crearBadge(cita.estado, 'badge-estado'), 'celda-estado'));
+        
         tbody.appendChild(tr);
     });
 }
 
-// Contadores del encabezado
 function actualizarResumen() {
     const hoy = fechaLocalISO();
-    document.getElementById('stat-hoy').textContent = citas.filter(c => c.fecha === hoy).length;
+    document.getElementById('stat-hoy').textContent = citas.filter(c => c.fecha_hora_inicio.startsWith(hoy)).length;
     document.getElementById('stat-total').textContent = citas.length;
-    document.getElementById('stat-pacientes').textContent = pacientes.length;
+    document.getElementById('stat-mascotas').textContent = mascotas.length;
 }
 
-// Navegación inferior (solo se ve en celular; en escritorio todo está a la vista)
 const botonesNav = document.querySelectorAll('.bottom-nav button');
-
 function mostrarVista(vista) {
     document.body.dataset.vista = vista;
     botonesNav.forEach(boton => {
         const activo = boton.dataset.vista === vista;
         boton.classList.toggle('activo', activo);
-        if (activo) {
-            boton.setAttribute('aria-current', 'page');
-        } else {
-            boton.removeAttribute('aria-current');
-        }
     });
     window.scrollTo({ top: 0 });
 }
 
-botonesNav.forEach(boton => {
-    boton.addEventListener('click', () => mostrarVista(boton.dataset.vista));
-});
-
+botonesNav.forEach(boton => boton.addEventListener('click', () => mostrarVista(boton.dataset.vista)));
 mostrarVista('agenda');
