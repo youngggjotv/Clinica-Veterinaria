@@ -22,7 +22,7 @@
                     <small>Clínica Veterinaria</small>
                 </span>
             </a>
-            <p class="topbar-note">Prototipo de Evaluación 3 (UML)</p>
+            <p class="topbar-note">Prototipo de Evaluación 3 </p>
         </div>
     </header>
 
@@ -65,7 +65,7 @@
                         </div>
                         <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
                             <input type="checkbox" id="tutor_consentimiento" style="width: auto; height: 18px;" required>
-                            <label for="tutor_consentimiento" style="margin: 0; font-size: 0.8rem; font-weight: normal;">Consentimiento uso de datos (Ley 21.719)</label>
+                            <label for="tutor_consentimiento" style="margin: 0; font-size: 0.8rem; font-weight: normal;">Dar consentimiento uso de datos (Ley 21.719)</label>
                         </div>
                         
                         <div class="form-row">
@@ -88,7 +88,7 @@
 
                 <section class="card" data-vista="agendar">
                     <header class="card-head">
-                        <span class="tag">KAN-19 / UML</span>
+                        <span class="tag">KAN-19 </span>
                         <h2>Agendar cita</h2>
                     </header>
                     <form id="agenda-form">
@@ -126,7 +126,7 @@
                                 </select>
                             </div>
                         </div>
-                        <p class="hint">La cita calculará automáticamente su fecha_hora_fin añadiendo 30 minutos a la hora de inicio.</p>
+                        <p class="hint">La cita se calcula automáticamente con fecha y hora de termino añadiendo 30 minutos a la hora de inicio.</p>
                         <button type="submit" class="btn btn-primary">Generar Cita</button>
                         <p id="mensaje-validacion" class="mensaje" role="status" aria-live="polite"></p>
                     </form>
@@ -167,22 +167,22 @@
     </main>
 
     <footer class="footer">
-        <p>Clínica Veterinaria · Modelo de Datos Actualizado</p>
+        <p>Clínica Veterinaria · Agenda de citas </p>
     </footer>
 
     <!-- Navegación inferior celular -->
     <nav class="bottom-nav" aria-label="Secciones">
-        <button type="button" data-vista="agenda">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-            Agenda
+        <button type="button" data-vista="registro">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+            Pacientes
         </button>
         <button type="button" data-vista="agendar">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
             Agendar
         </button>
-        <button type="button" data-vista="registro">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
-            Pacientes
+        <button type="button" data-vista="agenda">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            Agenda
         </button>
     </nav>
 
