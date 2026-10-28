@@ -250,14 +250,17 @@ function renderizarAgenda() {
     const fechaFiltro = document.getElementById('filtro-fecha').value;
     tbody.innerHTML = '';
 
-    // Filtrar citas comparando la parte de la fecha del ISO string
-    let citasFiltradas = fechaFiltro ? citas.filter(c => c.fecha_hora_inicio.startsWith(fechaFiltro)) : [...citas];
+    // Filtrar solo las citas que tengan el nuevo formato UML para evitar errores
+    let citasValidas = citas.filter(c => c.fecha_hora_inicio && c.fecha_hora_fin);
+    
+    // Filtrar por la fecha seleccionada
+    let citasFiltradas = fechaFiltro ? citasValidas.filter(c => c.fecha_hora_inicio.startsWith(fechaFiltro)) : [...citasValidas];
 
     // Ordenar por hora de inicio
     citasFiltradas.sort((a, b) => a.fecha_hora_inicio.localeCompare(b.fecha_hora_inicio));
 
     if (citasFiltradas.length === 0) {
-        tbody.innerHTML = `<tr class="fila-vacia"><td colspan="5" class="vacio"><strong>Día tranquilo</strong>No hay citas agendadas.</td></tr>`;
+        tbody.innerHTML = `<tr class="fila-vacia"><td colspan="5" class="vacio"><strong>Día tranquilo</strong>No hay citas agendadas para esta fecha.</td></tr>`;
         return;
     }
 
