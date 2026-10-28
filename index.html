@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vet Agenda - Clínica Veterinaria Huellitas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Vet Agenda - Clínica Veterinaria Huellitas</h1>
+        <p>Prototipo de Evaluación 3: Gestión de Citas y Prevención de Solapamientos</p>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <h2>Registrar Tutor y Mascota (KAN-18)</h2>
+            <form id="registro-form">
+                <div class="form-group">
+                    <label for="tutor">Nombre del Tutor:</label>
+                    <input type="text" id="tutor" required>
+                </div>
+                <div class="form-group">
+                    <label for="mascota">Nombre de la Mascota:</label>
+                    <input type="text" id="mascota" required>
+                </div>
+                <button type="submit">Registrar Paciente</button>
+            </form>
+        </section>
+
+        <section class="form-section">
+            <h2>Agendar Cita (KAN-19)</h2>
+            <form id="agenda-form">
+                <div class="form-group">
+                    <label for="select-paciente">Paciente (Mascota - Tutor):</label>
+                    <select id="select-paciente" required>
+                        <option value="">Seleccione un paciente...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="veterinario">Veterinario/a:</label>
+                    <select id="veterinario" required>
+                        <option value="Vet 1">Veterinario 1</option>
+                        <option value="Vet 2">Veterinario 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora">Hora:</label>
+                    <input type="time" id="hora" required>
+                </div>
+                <button type="submit">Agendar Cita</button>
+                <p id="mensaje-validacion" class="mensaje"></p>
+            </form>
+        </section>
+
+        <section class="agenda-section">
+            <h2>Agenda Diaria por Veterinario (KAN-20)</h2>
+            <div class="filtros">
+                <label for="filtro-fecha">Filtrar por Fecha:</label>
+                <input type="date" id="filtro-fecha">
+                <button id="btn-filtrar">Ver Agenda</button>
+            </div>
+            <table id="tabla-agenda">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Veterinario</th>
+                        <th>Paciente (Mascota)</th>
+                        <th>Tutor</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Las citas se generarán dinámicamente aquí -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
