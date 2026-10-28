@@ -117,14 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
     actualizarHorasDisponibles();
     actualizarSelectMascotas();
     renderizarAgenda();
-    actualizarResumen();
+    actualizarResumen(); // Esta llamada inicializa los contadores al cargar la página
 });
 
 // Registro de Entidades separadas (Tutor y Mascota) según UML
 document.getElementById('registro-form').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Crear entidad Tutor
     const nuevoTutor = {
         id_tutor: "TUT-" + Date.now(),
         nombre: document.getElementById('tutor_nombre').value.trim(),
@@ -133,10 +132,9 @@ document.getElementById('registro-form').addEventListener('submit', function(e) 
         consentimiento: document.getElementById('tutor_consentimiento').checked
     };
     
-    // Crear entidad Mascota vinculada al Tutor
     const nuevaMascota = {
         id_mascota: "MAS-" + Date.now(),
-        id_tutor: nuevoTutor.id_tutor, // Clave foránea
+        id_tutor: nuevoTutor.id_tutor,
         nombre: document.getElementById('mascota_nombre').value.trim(),
         especie: document.getElementById('mascota_especie').value
     };
@@ -150,15 +148,13 @@ document.getElementById('registro-form').addEventListener('submit', function(e) 
     mostrarToast(`Mascota ${nuevaMascota.nombre} y su tutor ${nuevoTutor.nombre} registrados.`);
     this.reset();
     actualizarSelectMascotas();
-    actualizarResumen();
+    actualizarResumen(); // Actualiza el contador de mascotas
 });
 
-// Actualizar lista desplegable usando la entidad Mascota
 function actualizarSelectMascotas() {
     const select = document.getElementById('select-mascota');
     select.innerHTML = '<option value="">Seleccione una mascota...</option>';
     mascotas.forEach(m => {
-        // Buscar el tutor asociado mediante la clave foránea
         const tutor = tutores.find(t => t.id_tutor === m.id_tutor);
         const tutorNombre = tutor ? tutor.nombre : "Sin tutor";
         
@@ -192,12 +188,10 @@ document.getElementById('agenda-form').addEventListener('submit', function(e) {
         return; 
     }
 
-    // Calcular fechas y horas estructuradas
     const fecha_hora_inicio = `${fecha}T${hora}`;
     const horaFinCalculada = aHora(aMinutos(hora) + DURACION_CITA);
     const fecha_hora_fin = `${fecha}T${horaFinCalculada}`;
 
-    // Entidad Cita
     const nuevaCita = {
         id_cita: "CIT-" + Date.now(),
         id_mascota: id_mascota,
@@ -219,10 +213,9 @@ document.getElementById('agenda-form').addEventListener('submit', function(e) {
 
     document.getElementById('filtro-fecha').value = fecha;
     renderizarAgenda();
-    actualizarResumen();
+    actualizarResumen(); // Actualiza los contadores de citas
 });
 
-// Renderizado de la agenda resolviendo las relaciones (Joins locales)
 document.getElementById('btn-filtrar').addEventListener('click', renderizarAgenda);
 document.getElementById('filtro-fecha').addEventListener('change', renderizarAgenda);
 
@@ -250,13 +243,19 @@ function renderizarAgenda() {
     const fechaFiltro = document.getElementById('filtro-fecha').value;
     tbody.innerHTML = '';
 
-    // Filtrar solo las citas que tengan el nuevo formato UML para evitar errores
-    let citasValidas = citas.filter(c => c.fecha_hora_inicio && c.fecha_hora_fin);
+    // CORRECCIÓN: Manejo robusto para evitar que citas con formato antiguo rompan la tabla
+    let citasFiltradas = [];
     
-    // Filtrar por la fecha seleccionada
-    let citasFiltradas = fechaFiltro ? citasValidas.filter(c => c.fecha_hora_inicio.startsWith(fechaFiltro)) : [...citasValidas];
+    if (fechaFiltro) {
+        citasFiltradas = citas.filter(c => {
+            // Verifica que la propiedad exista antes de usar startsWith
+            return c.fecha_hora_inicio && c.fecha_hora_inicio.startsWith(fechaFiltro);
+        });
+    } else {
+        // Solo mostrar citas que tengan el nuevo formato UML
+        citasFiltradas = citas.filter(c => c.fecha_hora_inicio);
+    }
 
-    // Ordenar por hora de inicio
     citasFiltradas.sort((a, b) => a.fecha_hora_inicio.localeCompare(b.fecha_hora_inicio));
 
     if (citasFiltradas.length === 0) {
@@ -267,15 +266,14 @@ function renderizarAgenda() {
     citasFiltradas.forEach(cita => {
         const tr = document.createElement('tr');
         
-        // Resolver relaciones
         const veterinarioObj = VETERINARIOS[cita.id_veterinario];
         const nombreVet = veterinarioObj ? veterinarioObj.nombre : "Desconocido";
         
         const mascotaObj = mascotas.find(m => m.id_mascota === cita.id_mascota) || {};
         
-        // Formatear visualización de hora
-        const horaInicioStr = cita.fecha_hora_inicio.split('T')[1];
-        const horaFinStr = cita.fecha_hora_fin.split('T')[1];
+        // CORRECCIÓN: Validación por si alguna cita no tiene fecha_hora_fin definida
+        const horaInicioStr = cita.fecha_hora_inicio.split('T')[1] || '00:00';
+        const horaFinStr = cita.fecha_hora_fin ? cita.fecha_hora_fin.split('T')[1] : '00:00';
         const horarioMuestra = `${horaInicioStr} - ${horaFinStr}`;
 
         const esVet2 = cita.id_veterinario === '2';
@@ -285,7 +283,7 @@ function renderizarAgenda() {
         tr.appendChild(crearCelda('Horario', horarioMuestra, 'hora'));
         tr.appendChild(crearCelda('Veterinario', crearBadge(nombreVet, claseVet), 'celda-vet'));
         tr.appendChild(crearCelda('Paciente', `${mascotaObj.nombre || '?'} (${mascotaObj.especie || '?'})`, 'mascota'));
-        tr.appendChild(crearCelda('Tipo', cita.tipo, 'celda-tipo'));
+        tr.appendChild(crearCelda('Tipo', cita.tipo || 'General', 'celda-tipo'));
         tr.appendChild(crearCelda('Estado', crearBadge(cita.estado, 'badge-estado'), 'celda-estado'));
         
         tbody.appendChild(tr);
@@ -294,7 +292,11 @@ function renderizarAgenda() {
 
 function actualizarResumen() {
     const hoy = fechaLocalISO();
-    document.getElementById('stat-hoy').textContent = citas.filter(c => c.fecha_hora_inicio.startsWith(hoy)).length;
+    
+    // CORRECCIÓN: Contar solo citas con el formato nuevo para evitar errores
+    const citasHoy = citas.filter(c => c.fecha_hora_inicio && c.fecha_hora_inicio.startsWith(hoy)).length;
+    
+    document.getElementById('stat-hoy').textContent = citasHoy;
     document.getElementById('stat-total').textContent = citas.length;
     document.getElementById('stat-mascotas').textContent = mascotas.length;
 }
