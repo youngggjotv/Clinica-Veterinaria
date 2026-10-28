@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#2f5d50">
+    <meta name="theme-color" content="#0ea5e9">
     <title>Agenda de Citas - Clínica Veterinaria</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,7 @@
                     <small>Clínica Veterinaria</small>
                 </span>
             </a>
-            <p class="topbar-note">Prototipo de Evaluación 3</p>
+            <p class="topbar-note">Prototipo de Evaluación 3 (UML)</p>
         </div>
     </header>
 
@@ -36,12 +36,12 @@
                 <p class="hand">¡Bienvenido!</p>
                 <h1>Agenda de la clínica</h1>
                 <p class="fecha-hoy" id="fecha-hoy"></p>
-                <p class="lead">Gestión de citas con prevención de solapamientos: cada cita dura 30 minutos y un veterinario no puede tener dos pacientes a la vez.</p>
+                <p class="lead">Gestión de citas alineada al diagrama UML: entidades separadas y prevención de solapamientos (30 min).</p>
             </div>
             <ul class="stats" aria-label="Resumen">
                 <li><span class="stat-num" id="stat-hoy">0</span><span class="stat-label">citas hoy</span></li>
                 <li><span class="stat-num" id="stat-total">0</span><span class="stat-label">citas en total</span></li>
-                <li><span class="stat-num" id="stat-pacientes">0</span><span class="stat-label">pacientes</span></li>
+                <li><span class="stat-num" id="stat-mascotas">0</span><span class="stat-label">mascotas</span></li>
             </ul>
         </section>
 
@@ -49,40 +49,74 @@
             <aside class="side">
                 <section class="card" data-vista="registro">
                     <header class="card-head">
-                        <span class="tag">KAN-18</span>
+                        <span class="tag">KAN-18 / UML</span>
                         <h2>Registrar tutor y mascota</h2>
                     </header>
                     <form id="registro-form">
                         <div class="form-group">
-                            <label for="tutor">Nombre del tutor</label>
-                            <input type="text" id="tutor" placeholder="Ej: Camila Rojas" autocomplete="off" required>
+                            <label for="tutor_nombre">Nombre del tutor</label>
+                            <input type="text" id="tutor_nombre" required>
                         </div>
-                        <div class="form-group">
-                            <label for="mascota">Nombre de la mascota</label>
-                            <input type="text" id="mascota" placeholder="Ej: Canela" autocomplete="off" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tutor_correo">Correo</label>
+                                <input type="email" id="tutor_correo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tutor_telefono">Teléfono</label>
+                                <input type="tel" id="tutor_telefono" required>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Registrar paciente</button>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="tutor_consentimiento" style="width: auto; height: 18px;" required>
+                            <label for="tutor_consentimiento" style="margin: 0; font-size: 0.8rem; font-weight: normal;">Consentimiento uso de datos (Ley 21.719)</label>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mascota_nombre">Nombre mascota</label>
+                                <input type="text" id="mascota_nombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="mascota_especie">Especie</label>
+                                <select id="mascota_especie" required>
+                                    <option value="Perro">Perro</option>
+                                    <option value="Gato">Gato</option>
+                                    <option value="Exótico">Exótico</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar Entidades</button>
                     </form>
                 </section>
 
                 <section class="card" data-vista="agendar">
                     <header class="card-head">
-                        <span class="tag">KAN-19</span>
+                        <span class="tag">KAN-19 / UML</span>
                         <h2>Agendar cita</h2>
                     </header>
                     <form id="agenda-form">
                         <div class="form-group">
-                            <label for="select-paciente">Paciente (mascota - tutor)</label>
-                            <select id="select-paciente" required>
-                                <option value="">Seleccione un paciente...</option>
+                            <label for="select-mascota">Mascota (Paciente)</label>
+                            <select id="select-mascota" required>
+                                <option value="">Seleccione una mascota...</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="veterinario">Veterinario/a</label>
-                            <select id="veterinario" required>
-                                <option value="Vet 1">Veterinario/a Jose Lagos</option>
-                                <option value="Vet 2">Veterinario/a Maria Rodriguez</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="veterinario">Veterinario/a</label>
+                                <select id="veterinario" required>
+                                    <option value="1">Jose Lagos</option>
+                                    <option value="2">Maria Rodriguez</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cita_tipo">Tipo de Cita</label>
+                                <select id="cita_tipo" required>
+                                    <option value="Consulta general">Consulta general</option>
+                                    <option value="Vacunación">Vacunación</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -90,14 +124,14 @@
                                 <input type="date" id="fecha" required>
                             </div>
                             <div class="form-group">
-                                <label for="hora">Hora</label>
+                                <label for="hora">Hora de inicio</label>
                                 <select id="hora" required>
                                     <option value="">Elige una fecha primero</option>
                                 </select>
                             </div>
                         </div>
-                        <p class="hint">Atención: lunes a viernes de 09:00 a 13:00 y de 14:00 a 18:00, sábados de 10:00 a 14:00. Cada cita dura 30 minutos. Domingos cerrado.</p>
-                        <button type="submit" class="btn btn-primary">Agendar cita</button>
+                        <p class="hint">La cita calculará automáticamente su fecha_hora_fin añadiendo 30 minutos a la hora de inicio.</p>
+                        <button type="submit" class="btn btn-primary">Generar Cita</button>
                         <p id="mensaje-validacion" class="mensaje" role="status" aria-live="polite"></p>
                     </form>
                 </section>
@@ -120,10 +154,10 @@
                     <table id="tabla-agenda">
                         <thead>
                             <tr>
-                                <th>Hora</th>
+                                <th>Horario (Inicio - Fin)</th>
                                 <th>Veterinario</th>
-                                <th>Paciente (mascota)</th>
-                                <th>Tutor</th>
+                                <th>Paciente / Especie</th>
+                                <th>Tipo de Cita</th>
                                 <th>Estado</th>
                             </tr>
                         </thead>
@@ -137,10 +171,10 @@
     </main>
 
     <footer class="footer">
-        <p>Clínica Veterinaria · Agenda de Citas</p>
+        <p>Clínica Veterinaria · Modelo de Datos Actualizado</p>
     </footer>
 
-    <!-- Navegación inferior: solo se muestra en celular -->
+    <!-- Navegación inferior celular -->
     <nav class="bottom-nav" aria-label="Secciones">
         <button type="button" data-vista="agenda">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
