@@ -312,4 +312,4 @@ function mostrarVista(vista) {
 }
 
 botonesNav.forEach(boton => boton.addEventListener('click', () => mostrarVista(boton.dataset.vista)));
-mostrarVista('agenda');
+mostrarVista('registro');
