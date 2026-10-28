@@ -112,7 +112,6 @@ body {
     margin: 0.5rem 0 0;
     font-weight: 600;
     color: var(--green);
-    text-transform: capitalize;
 }
 
 .lead {
@@ -408,45 +407,190 @@ tbody tr:hover { background: #faf5ea; }
     .intro { flex-direction: column; align-items: flex-start; }
 }
 
-@media (max-width: 640px) {
-    .page { padding: 1.5rem 1rem 2rem; }
-    .topbar-note { display: none; }
-    .stats { width: 100%; }
-    .stats li { flex: 1; min-width: 0; }
-    .filtros { width: 100%; flex-wrap: wrap; }
-    .filtros input[type="date"] { flex: 1; }
+/* ---------- Versión celular ---------- */
+.bottom-nav { display: none; }
 
+@media (max-width: 720px) {
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+        padding-bottom: calc(76px + env(safe-area-inset-bottom));
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Barra superior fija y más compacta */
+    .topbar { position: sticky; top: 0; z-index: 20; }
+    .topbar-inner { padding: 0.7rem 1rem; }
+    .topbar-note { display: none; }
+    .brand-icon { width: 30px; height: 30px; }
+    .brand-text strong { font-size: 1.1rem; }
+
+    .page { padding: 1.25rem 1rem 1.5rem; }
+
+    /* Encabezado de la página */
+    .intro { gap: 1rem; margin-bottom: 1.25rem; }
+    .hand { font-size: 1.35rem; }
+    .intro h1 { font-size: 1.9rem; }
+    .lead { display: none; }
+    .stats { width: 100%; gap: 0.5rem; }
+    .stats li { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; }
+    .stat-num { font-size: 1.5rem; }
+    .stat-label { font-size: 0.72rem; }
+
+    /* Una sección a la vez; la navegación inferior cambia de vista */
+    .layout { gap: 1rem; }
+    .side { display: contents; }
+    .card { padding: 1.1rem; }
+
+    body[data-vista] .card[data-vista] { display: none; }
+    body[data-vista="agenda"] .card[data-vista="agenda"],
+    body[data-vista="agendar"] .card[data-vista="agendar"],
+    body[data-vista="registro"] .card[data-vista="registro"] { display: block; }
+
+    /* Los contadores solo tienen sentido junto a la agenda */
+    /* y en las vistas de formulario el saludo se oculta para subir el formulario */
+    body[data-vista]:not([data-vista="agenda"]) .intro { display: none; }
+
+    /* Campos y botones cómodos para el pulgar (16 px evita el zoom automático en iPhone) */
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    select {
+        min-height: 48px;
+        font-size: 16px;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    select {
+        padding-right: 2.5rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%232f5d50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.9rem center;
+    }
+
+    .btn { min-height: 48px; font-size: 1rem; }
+    .hint { font-size: 0.82rem; }
+
+    /* Filtro de la agenda */
+    .card-head-split { align-items: stretch; }
+    .filtros {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem;
+    }
+    .filtros label { grid-column: 1 / -1; margin-bottom: 0; }
+    .filtros input[type="date"] { width: 100%; }
+
+    /* La tabla pasa a ser una lista de tarjetas */
+    .tabla-wrap { overflow: visible; }
     thead { display: none; }
-    table, tbody, tr, td { display: block; width: 100%; }
+    table, tbody { display: block; width: 100%; }
 
     tbody tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "hora vet"
+            "mascota estado"
+            "tutor estado";
+        column-gap: 0.75rem;
+        row-gap: 0.15rem;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        margin-bottom: 0.65rem;
+        background: #fff;
         border: 1px solid var(--line);
+        border-left: 4px solid var(--green);
         border-radius: 12px;
-        padding: 0.4rem 0.8rem;
-        margin-bottom: 0.75rem;
     }
+
+    tbody tr.fila-vet2 { border-left-color: var(--clay); }
+    tbody tr:hover { background: #fff; }
 
     tbody td {
+        display: block;
+        padding: 0;
+        border: 0;
+    }
+
+    td.hora { grid-area: hora; font-size: 1.25rem; }
+    td.celda-vet { grid-area: vet; justify-self: end; }
+    td.mascota { grid-area: mascota; font-size: 1.02rem; }
+    td.celda-tutor { grid-area: tutor; font-size: 0.88rem; color: var(--ink-soft); }
+    td.celda-tutor::before { content: "Tutor: "; }
+    td.celda-estado { grid-area: estado; justify-self: end; align-self: end; }
+
+    tbody tr.fila-vacia {
+        display: block;
+        padding: 0;
+        background: transparent;
+        border: 1px dashed var(--line);
+    }
+
+    /* Barra de navegación inferior */
+    .bottom-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.25rem;
+        padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
+        background: var(--surface);
+        border-top: 1px solid var(--line);
+        box-shadow: 0 -6px 18px rgba(34, 48, 42, 0.07);
+    }
+
+    .bottom-nav button {
         display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.45rem 0;
-        border-bottom: 1px dashed var(--line);
-        text-align: right;
-    }
-
-    tbody td:last-child { border-bottom: none; }
-
-    tbody td[data-label]::before {
-        content: attr(data-label);
-        font-size: 0.74rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        min-height: 52px;
+        padding: 0.35rem 0;
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 600;
         color: var(--ink-soft);
-        text-align: left;
+        background: none;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
     }
 
-    tbody td.vacio { display: block; text-align: center; }
+    .bottom-nav svg {
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .bottom-nav button.activo { color: var(--green); background: var(--green-tint); }
+    .bottom-nav button:focus-visible { outline: 3px solid rgba(212, 103, 60, 0.45); outline-offset: -3px; }
+
+    /* El aviso flotante sube para no quedar tapado por la barra */
+    .toast {
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+        bottom: calc(76px + env(safe-area-inset-bottom));
+    }
+
+    .footer { display: none; }
+}
+
+/* Pantallas muy angostas: fecha y hora una bajo la otra */
+@media (max-width: 400px) {
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+    .intro h1 { font-size: 1.65rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
