@@ -1,10 +1,10 @@
+// INICIALIZAR SUPABASE
 const { createClient } = supabase;
-// URL obtenida de tu proyecto
 const supabaseUrl = 'https://bfvdlqayemifnsykjbjh.supabase.co'; 
-const supabaseKey = 'sb_publishable__dcKhjydkm8s7Z9Jnpwqkw_3wJaehGz'; // Pega tu anon key aquí
+const supabaseKey = 'TU_SUPABASE_ANON_KEY'; // <-- PEGA TU CLAVE AQUÍ
 const supabaseDb = createClient(supabaseUrl, supabaseKey);
 
-// Reemplazar la carga inicial estática
+// Variables locales para mantener la UI rápida
 let tutores = [];
 let mascotas = [];
 let citas = [];
@@ -50,7 +50,6 @@ function bloquesDelDia(fechaISO) {
     return bloques;
 }
 
-// Verifica solapamiento usando fecha_hora_inicio
 function buscarConflicto(id_veterinario, fecha, hora) {
     const fechaHoraBuscada = `${fecha}T${hora}`;
     return citas.find(c => 
@@ -112,14 +111,16 @@ function mostrarToast(texto) {
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
 }
 
+// CARGAR DATOS DESDE SUPABASE AL INICIAR
 document.addEventListener('DOMContentLoaded', async () => {
     const hoy = fechaLocalISO();
     const textoFecha = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('fecha-hoy').textContent = textoFecha.charAt(0).toUpperCase() + textoFecha.slice(1);
+    
     document.getElementById('filtro-fecha').value = hoy;
     document.getElementById('fecha').value = hoy;
 
-    // Obtener datos desde Supabase
+    // OBTENER DATOS DE LA BASE DE DATOS
     const [{ data: tutoresData }, { data: mascotasData }, { data: citasData }] = await Promise.all([
         supabaseDb.from('tutores').select('*'),
         supabaseDb.from('mascotas').select('*'),
@@ -136,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarResumen();
 });
 
-// Registro de Entidades separadas (Tutor y Mascota) según UML
+// REGISTRAR TUTOR Y MASCOTA EN SUPABASE
 document.getElementById('registro-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -156,12 +157,12 @@ document.getElementById('registro-form').addEventListener('submit', async functi
         especie: document.getElementById('mascota_especie').value
     };
 
-    // Insertar en Supabase
+    // INSERTAR EN SUPABASE
     const { error: errorTutor } = await supabaseDb.from('tutores').insert([nuevoTutor]);
     const { error: errorMascota } = await supabaseDb.from('mascotas').insert([nuevaMascota]);
 
-    if(errorTutor || errorMascota) {
-        mostrarToast("Hubo un error al registrar los datos.");
+    if (errorTutor || errorMascota) {
+        mostrarToast("Hubo un error al registrar los datos en Supabase.");
         return;
     }
 
@@ -188,9 +189,33 @@ function actualizarSelectMascotas() {
     });
 }
 
-// Agendar Cita construyendo entidad Cita según UML
-// Código anterior de validación se mantiene igual...
-    
+// AGENDAR CITA EN SUPABASE
+document.getElementById('agenda-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id_mascota = document.getElementById('select-mascota').value;
+    const id_veterinario = document.getElementById('veterinario').value;
+    const tipo = document.getElementById('cita_tipo').value;
+    const fecha = document.getElementById('fecha').value;
+    const hora = document.getElementById('hora').value;
+    const mensajeEl = document.getElementById('mensaje-validacion');
+
+    if (!hora || !bloquesDelDia(fecha).includes(hora)) {
+        mensajeEl.textContent = "Error: Seleccione una hora dentro del horario.";
+        mensajeEl.className = "mensaje error";
+        return; 
+    }
+
+    if (buscarConflicto(id_veterinario, fecha, hora)) {
+        mensajeEl.textContent = "Error: El veterinario ya tiene una cita agendada en ese horario.";
+        mensajeEl.className = "mensaje error";
+        actualizarHorasDisponibles();
+        return; 
+    }
+
+    const fecha_hora_inicio = `${fecha}T${hora}`;
+    const horaFinCalculada = aHora(aMinutos(hora) + DURACION_CITA);
+    const fecha_hora_fin = `${fecha}T${horaFinCalculada}`;
+
     const nuevaCita = {
         id_cita: "CIT-" + Date.now(),
         id_mascota: id_mascota,
@@ -201,25 +226,28 @@ function actualizarSelectMascotas() {
         estado: 'Agendada'
     };
 
-    // Insertar cita en Supabase
+    // INSERTAR CITA EN SUPABASE
     const { error } = await supabaseDb.from('citas').insert([nuevaCita]);
 
-    if(error) {
+    if (error) {
         mensajeEl.textContent = "Error al agendar en la base de datos.";
         mensajeEl.className = "mensaje error";
+        console.error(error);
         return;
     }
 
-    citas.push(nuevaCita); // Actualizar arreglo local
+    citas.push(nuevaCita);
 
     mensajeEl.textContent = "Cita agendada con éxito.";
     mensajeEl.className = "mensaje success";
     this.reset();
     document.getElementById('fecha').value = fecha; 
     actualizarHorasDisponibles(); 
+
     document.getElementById('filtro-fecha').value = fecha;
     renderizarAgenda();
     actualizarResumen();
+});
 
 document.getElementById('btn-filtrar').addEventListener('click', renderizarAgenda);
 document.getElementById('filtro-fecha').addEventListener('change', renderizarAgenda);
@@ -248,16 +276,11 @@ function renderizarAgenda() {
     const fechaFiltro = document.getElementById('filtro-fecha').value;
     tbody.innerHTML = '';
 
-    // CORRECCIÓN: Manejo robusto para evitar que citas con formato antiguo rompan la tabla
     let citasFiltradas = [];
     
     if (fechaFiltro) {
-        citasFiltradas = citas.filter(c => {
-            // Verifica que la propiedad exista antes de usar startsWith
-            return c.fecha_hora_inicio && c.fecha_hora_inicio.startsWith(fechaFiltro);
-        });
+        citasFiltradas = citas.filter(c => c.fecha_hora_inicio && c.fecha_hora_inicio.startsWith(fechaFiltro));
     } else {
-        // Solo mostrar citas que tengan el nuevo formato UML
         citasFiltradas = citas.filter(c => c.fecha_hora_inicio);
     }
 
@@ -276,7 +299,6 @@ function renderizarAgenda() {
         
         const mascotaObj = mascotas.find(m => m.id_mascota === cita.id_mascota) || {};
         
-        // CORRECCIÓN: Validación por si alguna cita no tiene fecha_hora_fin definida
         const horaInicioStr = cita.fecha_hora_inicio.split('T')[1] || '00:00';
         const horaFinStr = cita.fecha_hora_fin ? cita.fecha_hora_fin.split('T')[1] : '00:00';
         const horarioMuestra = `${horaInicioStr} - ${horaFinStr}`;
@@ -297,8 +319,6 @@ function renderizarAgenda() {
 
 function actualizarResumen() {
     const hoy = fechaLocalISO();
-    
-    // CORRECCIÓN: Contar solo citas con el formato nuevo para evitar errores
     const citasHoy = citas.filter(c => c.fecha_hora_inicio && c.fecha_hora_inicio.startsWith(hoy)).length;
     
     document.getElementById('stat-hoy').textContent = citasHoy;
