@@ -1,7 +1,7 @@
 // INICIALIZAR SUPABASE
 const { createClient } = supabase;
 const supabaseUrl = 'https://bfvdlqayemifnsykjbjh.supabase.co'; 
-const supabaseKey = 'TU_SUPABASE_ANON_KEY'; // <-- PEGA TU CLAVE AQUÍ
+const supabaseKey = 'sb_publishable__dcKhjydkm8s7Z9Jnpwqkw_3wJaehGz'; // <-- PEGA TU CLAVE AQUÍ
 const supabaseDb = createClient(supabaseUrl, supabaseKey);
 
 // Variables locales para mantener la UI rápida
