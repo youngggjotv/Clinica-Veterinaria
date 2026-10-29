@@ -137,11 +137,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Registro de Entidades separadas (Tutor y Mascota) según UML
-document.getElementById('registro-form').addEventListener('submit', function(e) {
+document.getElementById('registro-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    const id_tutor = "TUT-" + Date.now();
     const nuevoTutor = {
-        id_tutor: "TUT-" + Date.now(),
+        id_tutor: id_tutor,
         nombre: document.getElementById('tutor_nombre').value.trim(),
         correo: document.getElementById('tutor_correo').value.trim(),
         telefono: document.getElementById('tutor_telefono').value.trim(),
@@ -150,21 +151,27 @@ document.getElementById('registro-form').addEventListener('submit', function(e) 
     
     const nuevaMascota = {
         id_mascota: "MAS-" + Date.now(),
-        id_tutor: nuevoTutor.id_tutor,
+        id_tutor: id_tutor,
         nombre: document.getElementById('mascota_nombre').value.trim(),
         especie: document.getElementById('mascota_especie').value
     };
 
+    // Insertar en Supabase
+    const { error: errorTutor } = await supabaseDb.from('tutores').insert([nuevoTutor]);
+    const { error: errorMascota } = await supabaseDb.from('mascotas').insert([nuevaMascota]);
+
+    if(errorTutor || errorMascota) {
+        mostrarToast("Hubo un error al registrar los datos.");
+        return;
+    }
+
     tutores.push(nuevoTutor);
     mascotas.push(nuevaMascota);
     
-    localStorage.setItem('tutores', JSON.stringify(tutores));
-    localStorage.setItem('mascotas', JSON.stringify(mascotas));
-
     mostrarToast(`Mascota ${nuevaMascota.nombre} y su tutor ${nuevoTutor.nombre} registrados.`);
     this.reset();
     actualizarSelectMascotas();
-    actualizarResumen(); // Actualiza el contador de mascotas
+    actualizarResumen();
 });
 
 function actualizarSelectMascotas() {
