@@ -112,18 +112,28 @@ function mostrarToast(texto) {
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const hoy = fechaLocalISO();
     const textoFecha = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('fecha-hoy').textContent = textoFecha.charAt(0).toUpperCase() + textoFecha.slice(1);
-    
     document.getElementById('filtro-fecha').value = hoy;
     document.getElementById('fecha').value = hoy;
+
+    // Obtener datos desde Supabase
+    const [{ data: tutoresData }, { data: mascotasData }, { data: citasData }] = await Promise.all([
+        supabaseDb.from('tutores').select('*'),
+        supabaseDb.from('mascotas').select('*'),
+        supabaseDb.from('citas').select('*')
+    ]);
+
+    tutores = tutoresData || [];
+    mascotas = mascotasData || [];
+    citas = citasData || [];
 
     actualizarHorasDisponibles();
     actualizarSelectMascotas();
     renderizarAgenda();
-    actualizarResumen(); // Esta llamada inicializa los contadores al cargar la página
+    actualizarResumen();
 });
 
 // Registro de Entidades separadas (Tutor y Mascota) según UML
