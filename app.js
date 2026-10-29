@@ -1,7 +1,13 @@
-// Base de datos local simulando el modelo relacional (UML)
-let tutores = JSON.parse(localStorage.getItem('tutores')) || [];
-let mascotas = JSON.parse(localStorage.getItem('mascotas')) || [];
-let citas = JSON.parse(localStorage.getItem('citas')) || [];
+const { createClient } = supabase;
+// URL obtenida de tu proyecto
+const supabaseUrl = 'https://bfvdlqayemifnsykjbjh.supabase.co'; 
+const supabaseKey = 'sb_publishable__dcKhjydkm8s7Z9Jnpwqkw_3wJaehGz'; // Pega tu anon key aquí
+const supabaseDb = createClient(supabaseUrl, supabaseKey);
+
+// Reemplazar la carga inicial estática
+let tutores = [];
+let mascotas = [];
+let citas = [];
 
 // Diccionario estático de Veterinarios según UML
 const VETERINARIOS = {
