@@ -1,22 +1,28 @@
-# VetAgenda - Clínica Veterinaria (Estructura PHP)
+# VetAgenda — Sistema de Gestión de Citas Veterinarias
 
-Proyecto adaptado a la estructura clásica en PHP con carpetas `assets/`, `gestores/`, `mantenedores/`, `reportes/` y control de sesiones por rol.
+Aplicación web desarrollada para el curso **Ingeniería de Software I** orientada a digitalizar la agenda de una clínica veterinaria, evitar dobles reservas y reducir la tasa de no asistencia mediante el seguimiento de confirmaciones.
 
-## Cómo ejecutarlo localmente
-### Opción A: Con PHP integrado (sin instalar XAMPP)
-1. Abre la carpeta `vetagenda-php` en VS Code.
-2. En la terminal ejecuta:
-   ```bash
-   php -S localhost:8000
-   ```
-3. Abre `http://localhost:8000/login.php` en tu navegador.
 
-### Opción B: Con XAMPP
-1. Copia la carpeta `vetagenda-php` dentro de `C:\xampp\htdocs\`.
-2. Inicia Apache en XAMPP.
-3. Abre `http://localhost/vetagenda-php/login.php`.
+## Integrantes del grupo
+* **Cristofer Alcaíno**
+* **Javier Espinoza**
+* **Diego Norambuena**
+* **Docente:** Hernán Campos Rivero
 
-## Credenciales de prueba
-- **Recepción (`menu_principal.php`):** `recepcion` / `recepcion123`
-- **Admin (`menu_admin.php`):** `admin` / `admin123`
-- **Tutor (`menu_cliente.php`):** `cliente` / `cliente123`
+
+
+## Enlaces del Proyecto
+| Recurso | Enlace |
+| :--- | :--- |
+| **Sitio Web en Vivo** | [https://vetagenda.ct.ws](https://vetagenda.ct.ws) |
+| **Tablero JIRA (Kanban)** | [Proyecto KAN - VetAgenda](https://vetagenda.atlassian.net/jira/software/projects/KAN/boards/2) |
+| **Documentación Confluence** | [Procesos BPMN, UML y Requisitos](https://vetagenda.atlassian.net/wiki/spaces/Vetagenda/pages/5275651/Vetagenda+Taller+de+procesos+UML+y+requisitos) |
+| **Repositorio GitHub** | [youngggjotv/Clinica-Veterinaria](https://github.com/youngggjotv/Clinica-Veterinaria) |
+
+
+
+## Tecnologías y Despliegue
+* **Lenguaje Backend:** PHP 8+ (PDO)
+* **Frontend:** HTML5 y CSS3 (diseño responsivo para escritorio y móvil)
+* **Base de Datos:** MySQL (producción en InfinityFree) / SQLite (pruebas locales rápidas)
+* **Despliegue Continuo (CI/CD):** GitHub Actions conectado por FTP a InfinityFree (cada fusión en `main` actualiza automáticamente `vetagenda.ct.ws` excluyendo credenciales locales).
