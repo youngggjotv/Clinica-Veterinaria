@@ -49,12 +49,16 @@ function bloquesDelDia(fechaISO) {
     });
     return bloques;
 }
-
 function buscarConflicto(id_veterinario, fecha, hora) {
-    const fechaHoraBuscada = `${fecha}T${hora}`;
-    return citas.find(c => 
-        c.id_veterinario === id_veterinario && 
-        c.fecha_hora_inicio === fechaHoraBuscada
+    return buscarConflictoEn(citas, id_veterinario, fecha, hora
+
+//function buscarConflicto(id_veterinario, fecha, hora) {
+    //const fechaHoraBuscada = `${fecha}T${hora}`;
+    //return citas.find(c => 
+        //c.id_veterinario === id_veterinario && 
+        //c.fecha_hora_inicio === fechaHoraBuscada
+        //c.fecha_hora_inicio === fechaHoraBuscada &&
+        //c.estado !== 'Cancelada'
     );
 }
 
@@ -278,6 +282,21 @@ function crearBadge(texto, clase) {
     span.textContent = texto;
     return span;
 }
+//cambio añadido
+async function cancelarCita(id_cita) {
+    const { error } = await supabaseDb.from('citas').update({ estado: 'Cancelada' }).eq('id_cita', id_cita);
+    if (error) {
+        mostrarToast("No se pudo cancelar la cita.");
+        console.error(error);
+        return;
+    }
+    const cita = citas.find(c => c.id_cita === id_cita);
+    if (cita) cita.estado = 'Cancelada';
+    mostrarToast("Cita cancelada. El horario quedó disponible.");
+    actualizarHorasDisponibles();
+    renderizarAgenda();
+    actualizarResumen();
+}
 
 function renderizarAgenda() {
     const tbody = document.querySelector('#tabla-agenda tbody');
@@ -319,7 +338,18 @@ function renderizarAgenda() {
         tr.appendChild(crearCelda('Veterinario', crearBadge(nombreVet, claseVet), 'celda-vet'));
         tr.appendChild(crearCelda('Paciente', `${mascotaObj.nombre || '?'} (${mascotaObj.especie || '?'})`, 'mascota'));
         tr.appendChild(crearCelda('Tipo', cita.tipo || 'General', 'celda-tipo'));
-        tr.appendChild(crearCelda('Estado', crearBadge(cita.estado, 'badge-estado'), 'celda-estado'));
+        //inicio cambio kan-27
+        //tr.appendChild(crearCelda('Estado', crearBadge(cita.estado, 'badge-estado'), 'celda-estado'));
+        const contenedorEstado = document.createElement('div');
+        contenedorEstado.appendChild(crearBadge(cita.estado, 'badge-estado'));
+        if (cita.estado !== 'Cancelada') {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = 'Cancelar';
+            btn.addEventListener('click', () => cancelarCita(cita.id_cita));
+            contenedorEstado.appendChild(btn);
+        }
+        tr.appendChild(crearCelda('Estado', contenedorEstado, 'celda-estado'));
         
         tbody.appendChild(tr);
     });
