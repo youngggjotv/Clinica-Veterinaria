@@ -3,7 +3,7 @@ const { createClient } = supabase;
 const supabaseUrl = 'https://bfvdlqayemifnsykjbjh.supabase.co'; 
 const supabaseKey = 'sb_publishable__dcKhjydkm8s7Z9Jnpwqkw_3wJaehGz'; // <-- PEGA TU CLAVE AQUÍ
 const supabaseDb = createClient(supabaseUrl, supabaseKey);
-
+//hola chicos
 // Variables locales para mantener la UI rápida
 let tutores = [];
 let mascotas = [];
