@@ -140,16 +140,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 // REGISTRAR TUTOR Y MASCOTA EN SUPABASE
 document.getElementById('registro-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+    //Cambio2 añadir
+    if (!document.getElementById('tutor_consentimiento').checked) {
+        mostrarToast("Debe aceptar el consentimiento de datos (Ley 21.719) para registrar al tutor.");
+        return;
+    }
+    //Fin Cambio2
     const id_tutor = "TUT-" + Date.now();
     const nuevoTutor = {
         id_tutor: id_tutor,
         nombre: document.getElementById('tutor_nombre').value.trim(),
         correo: document.getElementById('tutor_correo').value.trim(),
         telefono: document.getElementById('tutor_telefono').value.trim(),
-        consentimiento: document.getElementById('tutor_consentimiento').checked
+        //Cambio
+        //consentimiento: document.getElementById('tutor_consentimiento').checked
+        consentimiento: true,
+        fecha_consentimiento: new Date().toISOString()
     };
-    
+    //Fin Cambio
     const nuevaMascota = {
         id_mascota: "MAS-" + Date.now(),
         id_tutor: id_tutor,
