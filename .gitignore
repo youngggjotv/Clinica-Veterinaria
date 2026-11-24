@@ -1,0 +1,5 @@
+vetagenda.sqlite
+.env
+.vscode/
+.DS_Store
+Thumbs.db
