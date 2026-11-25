@@ -9,8 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $volver      = $_POST['volver'] ?? '/reportes/agenda_diaria.php';
 
     if (in_array($nuevoEstado, ['Confirmada', 'Cancelada'], true) && $idCita !== '') {
-        $stmt = $pdo->prepare('UPDATE citas SET estado = ? WHERE id_cita = ?');
-        $stmt->execute([$nuevoEstado, $idCita]);
+        // Regla RF-02 / A-05: solo se puede confirmar si sigue Pendiente
+        if ($nuevoEstado === 'Confirmada') {
+            $stmt = $pdo->prepare("UPDATE citas SET estado = 'Confirmada' WHERE id_cita = ? AND estado = 'Pendiente'");
+            $stmt->execute([$idCita]);
+        } else {
+            // Al cancelar, el bloque queda libre para reprogramar (A-05)
+            $stmt = $pdo->prepare("UPDATE citas SET estado = 'Cancelada' WHERE id_cita = ? AND estado != 'Cancelada'");
+            $stmt->execute([$idCita]);
+        }
     }
     header('Location: ' . $volver);
     exit;
