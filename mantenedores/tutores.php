@@ -54,6 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
             $tipoMsg = 'success';
         } // <-- 1. Llave de cierre agregada
+    } elseif ($accion === 'editar') {
+        $idEditar   = $_POST['id_tutor'] ?? '';
+        $nuevoMail  = trim($_POST['nuevo_correo'] ?? '');
+        $nuevoFono  = trim($_POST['nuevo_telefono'] ?? '');
+        if ($idEditar && $nuevoMail && $nuevoFono) {
+            $stmtUp = $pdo->prepare('UPDATE tutores SET correo = ?, telefono = ? WHERE id_tutor = ?');
+            $stmtUp->execute([$nuevoMail, $nuevoFono, $idEditar]);
+            $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
+            $tipoMsg = 'success';
+        } // <-- 1. Llave de cierre agregada
     } elseif ($accion === 'eliminar') { // <-- 2. Acción eliminar agregada
         $idEliminar = $_POST['id_tutor'] ?? '';
         if ($idEliminar) {
@@ -68,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
 
 $tutores = $pdo->query("
     SELECT t.*, COUNT(m.id_mascota) AS total_mascotas
