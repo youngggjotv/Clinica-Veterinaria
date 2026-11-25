@@ -53,6 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUp->execute([$nuevoMail, $nuevoFono, $idEditar]);
             $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
             $tipoMsg = 'success';
+        }
+    } elseif ($accion === 'eliminar') {
+        $idEliminar = $_POST['id_tutor'] ?? '';
+        $stmtDel = $pdo->prepare('DELETE FROM tutores WHERE id_tutor = ?');
+        $stmtDel->execute([$idEliminar]);
+        $mensaje = 'Datos personales del tutor eliminados conforme a la Ley 21.719.';
+        $tipoMsg = 'success';
     }
 }
 
