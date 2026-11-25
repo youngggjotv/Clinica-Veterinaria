@@ -21,19 +21,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = 'RNF-01: Debe otorgar consentimiento explícito (Ley 21.719).';
             $tipoMsg = 'error';
         } elseif ($nombreTutor && $correo && $telefono && $nombreMascota) {
-            $ts = (int)(microtime(true) * 1000);
-            $idTutor   = 'TUT-' . $ts;
-            $idMascota = 'MAS-' . $ts;
+            // KAN-18:correo duplicado
+            $stmtCheck = $pdo->prepare('SELECT COUNT(*) FROM tutores WHERE LOWER(correo) = LOWER(?)');
+            $stmtCheck->execute([$correo]);
 
-            $stmtT = $pdo->prepare('INSERT INTO tutores (id_tutor, nombre, correo, telefono, consentimiento, fecha_registro) VALUES (?, ?, ?, ?, ?, ?)');
-            $stmtT->execute([$idTutor, $nombreTutor, $correo, $telefono, $consentimiento, date('Y-m-d H:i:s')]);
+            if ((int)$stmtCheck->fetchColumn() > 0) {
+                $mensaje = "Error (RF-03): Ya existe un tutor registrado con el correo $correo.";
+                $tipoMsg = 'error';
+            } else {
+                $ts = (int)(microtime(true) * 1000);
+                $idTutor   = 'TUT-' . $ts;
+                $idMascota = 'MAS-' . $ts;
 
-            $stmtM = $pdo->prepare('INSERT INTO mascotas (id_mascota, id_tutor, nombre, especie) VALUES (?, ?, ?, ?)');
-            $stmtM->execute([$idMascota, $idTutor, $nombreMascota, $especie]);
+                $stmtT = $pdo->prepare('INSERT INTO tutores (id_tutor, nombre, correo, telefono, consentimiento, fecha_registro) VALUES (?, ?, ?, ?, ?, ?)');
+                $stmtT->execute([$idTutor, $nombreTutor, $correo, $telefono, $consentimiento, date('Y-m-d H:i:s')]);
 
-            $mensaje = "Tutor $nombreTutor y mascota $nombreMascota registrados con éxito.";
-            $tipoMsg = 'success';
-        }
+                $stmtM = $pdo->prepare('INSERT INTO mascotas (id_mascota, id_tutor, nombre, especie) VALUES (?, ?, ?, ?)');
+                $stmtM->execute([$idMascota, $idTutor, $nombreMascota, $especie]);
+
+                $mensaje = "Tutor $nombreTutor y mascota $nombreMascota registrados con éxito.";
+                $tipoMsg = 'success';
+            }
+        }}
     } elseif ($accion === 'eliminar') {
         $idEliminar = $_POST['id_tutor'] ?? '';
         $stmtDel = $pdo->prepare('DELETE FROM tutores WHERE id_tutor = ?');
