@@ -7,8 +7,11 @@ $mensaje = '';
 $tipoMsg = '';
 
 function aMinutos(string $hora): int {
-    [$h, $m] = array_map('intval', explode(':', $hora));
-    return $h * 60 + $m;
+    $partes = explode(':', trim($hora));
+    if (count($partes) < 2) {
+        return 0;
+    }
+    return ((int)$partes[0]) * 60 + ((int)$partes[1]);
 }
 
 function aHora(int $min): string {
@@ -22,15 +25,16 @@ foreach ($servicios as $s) {
 }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $idMascota = $_POST['id_mascota'] ?? '';
-        $idVet     = $_POST['id_veterinario'] ?? '1';
-        $tipo      = $_POST['cita_tipo'] ?? 'Consulta general';
-        $fecha     = $_POST['fecha'] ?? '';
-        $hora      = $_POST['hora'] ?? '';
+        try{
+            $idMascota = $_POST['id_mascota'] ?? '';
+            $idVet     = $_POST['id_veterinario'] ?? '1';
+            $tipo      = $_POST['cita_tipo'] ?? 'Consulta general';
+            $fecha     = $_POST['fecha'] ?? '';
+            $hora      = substr(trim($_POST['hora'] ?? ''), 0, 5);
 
-        $duracion  = $duraciones[$tipo] ?? 30;
-        $iniNuevo  = aMinutos($hora);
-        $finNuevo  = $iniNuevo + $duracion;
+            $duracion  = $duraciones[$tipo] ?? 30;
+            $iniNuevo  = aMinutos($hora);
+            $finNuevo  = $iniNuevo + $duracion;
 
     // Regla RF-01: validar día hábil y horario de atención (Lun-Vie 09-13 / 14-18, Sáb 10-14, Dom cerrado)
         $diaSemana = (int)date('w', strtotime($fecha)); // 0 = Domingo, 6 = Sábado
@@ -49,6 +53,8 @@ foreach ($servicios as $s) {
             $mensaje = 'Error (RF-01): Horario fuera de atención (Lun-Vie 09:00-13:00 / 14:00-18:00, Sáb 10:00-14:00, Dom cerrado).';
             $tipoMsg = 'error';
         } else {
+            $stmt = $pdo->prepare("SELECT * FROM citas WHERE id_veterinario = ? AND fecha_hora_inicio LIKE ? AND LOWER(estado) != 'cancelada'");
+            $stmt->execute([$idVet, $fecha . '%']);
         $existentes = $stmt->fetchAll();
 
         $hayConflicto = false;
@@ -76,6 +82,10 @@ foreach ($servicios as $s) {
             $tipoMsg = 'success';
         }
     }
+        } catch (Throwable $e) {
+        $mensaje = 'Error al guardar la cita: ' . $e->getMessage();
+        $tipoMsg = 'error';
+        }
 }
 $mascotas = $pdo->query("
     SELECT m.id_mascota, m.nombre, m.especie, t.nombre AS tutor_nombre
