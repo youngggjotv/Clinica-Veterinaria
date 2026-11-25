@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
             $tipoMsg = 'success';
     }
+    }
 }
 
 $tutores = $pdo->query("
