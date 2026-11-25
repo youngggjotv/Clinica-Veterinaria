@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = "Tutor $nombreTutor y mascota $nombreMascota registrados con éxito.";
             $tipoMsg = 'success';
         }
-    }  .. elseif ($accion === 'editar') {
+    } elseif ($accion === 'editar') {
         $idEditar   = $_POST['id_tutor'] ?? '';
         $nuevoMail  = trim($_POST['nuevo_correo'] ?? '');
         $nuevoFono  = trim($_POST['nuevo_telefono'] ?? '');
