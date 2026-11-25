@@ -21,62 +21,62 @@ foreach ($servicios as $s) {
     $duraciones[$s['nombre_servicio']] = (int)$s['duracion_minutos'];
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idMascota = $_POST['id_mascota'] ?? '';
-    $idVet     = $_POST['id_veterinario'] ?? '1';
-    $tipo      = $_POST['cita_tipo'] ?? 'Consulta general';
-    $fecha     = $_POST['fecha'] ?? '';
-    $hora      = $_POST['hora'] ?? '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $idMascota = $_POST['id_mascota'] ?? '';
+        $idVet     = $_POST['id_veterinario'] ?? '1';
+        $tipo      = $_POST['cita_tipo'] ?? 'Consulta general';
+        $fecha     = $_POST['fecha'] ?? '';
+        $hora      = $_POST['hora'] ?? '';
 
-    $duracion  = $duraciones[$tipo] ?? 30;
-    $iniNuevo  = aMinutos($hora);
-    $finNuevo  = $iniNuevo + $duracion;
+        $duracion  = $duraciones[$tipo] ?? 30;
+        $iniNuevo  = aMinutos($hora);
+        $finNuevo  = $iniNuevo + $duracion;
 
     // Regla RF-01: validar día hábil y horario de atención (Lun-Vie 09-13 / 14-18, Sáb 10-14, Dom cerrado)
-    $diaSemana = (int)date('w', strtotime($fecha)); // 0 = Domingo, 6 = Sábado
-    $fueraDeHorario = false;
-    if ($diaSemana === 0) {
-        $fueraDeHorario = true;
-    } elseif ($diaSemana === 6) {
-        $fueraDeHorario = ($iniNuevo < aMinutos('10:00') || $finNuevo > aMinutos('14:00'));
-    } else {
-        $enManana = ($iniNuevo >= aMinutos('09:00') && $finNuevo <= aMinutos('13:00'));
-        $enTarde  = ($iniNuevo >= aMinutos('14:00') && $finNuevo <= aMinutos('18:00'));
-        $fueraDeHorario = !($enManana || $enTarde);
-    }
+        $diaSemana = (int)date('w', strtotime($fecha)); // 0 = Domingo, 6 = Sábado
+        $fueraDeHorario = false;
+        if ($diaSemana === 0) {
+            $fueraDeHorario = true;
+        } elseif ($diaSemana === 6) {
+            $fueraDeHorario = ($iniNuevo < aMinutos('10:00') || $finNuevo > aMinutos('14:00'));
+        } else {
+            $enManana = ($iniNuevo >= aMinutos('09:00') && $finNuevo <= aMinutos('13:00'));
+            $enTarde  = ($iniNuevo >= aMinutos('14:00') && $finNuevo <= aMinutos('18:00'));
+            $fueraDeHorario = !($enManana || $enTarde);
+        }
 
-    if ($fueraDeHorario) {
-        $mensaje = 'Error (RF-01): Horario fuera de atención (Lun-Vie 09:00-13:00 / 14:00-18:00, Sáb 10:00-14:00, Dom cerrado).';
-        $tipoMsg = 'error';
-    } else {
-    $existentes = $stmt->fetchAll();
+        if ($fueraDeHorario) {
+            $mensaje = 'Error (RF-01): Horario fuera de atención (Lun-Vie 09:00-13:00 / 14:00-18:00, Sáb 10:00-14:00, Dom cerrado).';
+            $tipoMsg = 'error';
+        } else {
+        $existentes = $stmt->fetchAll();
 
-    $hayConflicto = false;
-    foreach ($existentes as $c) {
-        $iniEx = aMinutos(substr($c['fecha_hora_inicio'], 11, 5));
-        $finEx = aMinutos(substr($c['fecha_hora_fin'], 11, 5));
-        if ($iniEx < $finNuevo && $finEx > $iniNuevo) {
-            $hayConflicto = true;
-            break;
+        $hayConflicto = false;
+        foreach ($existentes as $c) {
+            $iniEx = aMinutos(substr($c['fecha_hora_inicio'], 11, 5));
+            $finEx = aMinutos(substr($c['fecha_hora_fin'], 11, 5));
+            if ($iniEx < $finNuevo && $finEx > $iniNuevo) {
+                $hayConflicto = true;
+                break;
+            }
+        }
+
+        if ($hayConflicto) {
+            $mensaje = 'Error (RF-01): El veterinario ya tiene una cita que se solapa con ese horario.';
+            $tipoMsg = 'error';
+        } else {
+            $inicioISO = $fecha . 'T' . $hora;
+            $finISO    = $fecha . 'T' . aHora($finNuevo);
+            $idCita    = 'CIT-' . (int)(microtime(true) * 1000);
+
+            $ins = $pdo->prepare("INSERT INTO citas (id_cita, id_mascota, id_veterinario, tipo, fecha_hora_inicio, fecha_hora_fin, estado) VALUES (?, ?, ?, ?, ?, ?, 'Pendiente')");
+            $ins->execute([$idCita, $idMascota, $idVet, $tipo, $inicioISO, $finISO]);
+
+            $mensaje = "Cita agendada con éxito ($hora - " . aHora($finNuevo) . ") en estado Pendiente.";
+            $tipoMsg = 'success';
         }
     }
-
-    if ($hayConflicto) {
-        $mensaje = 'Error (RF-01): El veterinario ya tiene una cita que se solapa con ese horario.';
-        $tipoMsg = 'error';
-    } else {
-        $inicioISO = $fecha . 'T' . $hora;
-        $finISO    = $fecha . 'T' . aHora($finNuevo);
-        $idCita    = 'CIT-' . (int)(microtime(true) * 1000);
-
-        $ins = $pdo->prepare("INSERT INTO citas (id_cita, id_mascota, id_veterinario, tipo, fecha_hora_inicio, fecha_hora_fin, estado) VALUES (?, ?, ?, ?, ?, ?, 'Pendiente')");
-        $ins->execute([$idCita, $idMascota, $idVet, $tipo, $inicioISO, $finISO]);
-
-        $mensaje = "Cita agendada con éxito ($hora - " . aHora($finNuevo) . ") en estado Pendiente.";
-        $tipoMsg = 'success';
-    }
 }
-
 $mascotas = $pdo->query("
     SELECT m.id_mascota, m.nombre, m.especie, t.nombre AS tutor_nombre
     FROM mascotas m
