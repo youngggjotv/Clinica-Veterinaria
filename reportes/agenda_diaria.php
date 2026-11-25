@@ -5,6 +5,7 @@ requerirLogin(['recepcionista', 'admin']);
 
 $fechaFiltro = $_GET['fecha'] ?? date('Y-m-d');
 $vetFiltro   = $_GET['veterinario'] ?? '';
+$estadoFiltro = $_GET['estado'] ?? '';
 
 $sql = "
     SELECT c.*, m.nombre AS mascota_nombre, m.especie
@@ -17,6 +18,10 @@ $params = [$fechaFiltro . '%'];
 if ($vetFiltro !== '') {
     $sql .= " AND c.id_veterinario = ?";
     $params[] = $vetFiltro;
+}
+if ($estadoFiltro !== '') {
+    $sql .= " AND c.estado = ?";
+    $params[] = $estadoFiltro;
 }
 $sql .= " ORDER BY c.fecha_hora_inicio ASC";
 
@@ -59,6 +64,12 @@ $citas = $stmt->fetchAll();
                                 <?= htmlspecialchars($nomV) ?>
                             </option>
                         <?php endforeach; ?>
+                    </select>
+                    <select name="estado">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente" <?= $estadoFiltro === 'Pendiente' ? 'selected' : '' ?>>Pendiente</option>
+                        <option value="Confirmada" <?= $estadoFiltro === 'Confirmada' ? 'selected' : '' ?>>Confirmada</option>
+                        <option value="Cancelada" <?= $estadoFiltro === 'Cancelada' ? 'selected' : '' ?>>Cancelada</option>
                     </select>
                     <button type="submit" class="btn btn-ghost">Ver agenda</button>
                 </form>
