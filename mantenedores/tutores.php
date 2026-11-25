@@ -163,6 +163,8 @@ $tutores = $pdo->query("
                                                 <input type="tel" name="nuevo_telefono" value="<?= htmlspecialchars($t['telefono']) ?>" required style="padding:4px 6px; font-size:0.78rem; width:100px;">
                                                 <button type="submit" class="btn-mini btn-confirmar">Actualizar</button>
                                             </form>
+                                        </td>
+                                        <td>
                                             <form method="POST" onsubmit="return confirm('¿Eliminar datos de este tutor?');">
                                                 <input type="hidden" name="accion" value="eliminar">
                                                 <input type="hidden" name="id_tutor" value="<?= htmlspecialchars($t['id_tutor']) ?>">
