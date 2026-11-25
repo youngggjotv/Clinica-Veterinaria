@@ -44,22 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = "Tutor $nombreTutor y mascota $nombreMascota registrados con éxito.";
             $tipoMsg = 'success';
         }
-    } elseif ($accion === 'eliminar') {
-        $idEliminar = $_POST['id_tutor'] ?? '';
-        $stmtDel = $pdo->prepare('DELETE FROM tutores WHERE id_tutor = ?');
-        $stmtDel->execute([$idEliminar]);
-        $mensaje = 'Datos personales del tutor eliminados conforme a la Ley 21.719.';
-        $tipoMsg = 'success';
-    } elseif ($accion === 'editar') {
-        $idEditar  = $_POST['id_tutor'] ?? '';
-        $nuevoMail = trim($_POST['nuevo_correo'] ?? '');
-        $nuevoFono = trim($_POST['nuevo_telefono'] ?? '');
+    }  elseif ($accion === 'editar') {
+        $idEditar   = $_POST['id_tutor'] ?? '';
+        $nuevoMail  = trim($_POST['nuevo_correo'] ?? '');
+        $nuevoFono  = trim($_POST['nuevo_telefono'] ?? '');
         if ($idEditar && $nuevoMail && $nuevoFono) {
             $stmtUp = $pdo->prepare('UPDATE tutores SET correo = ?, telefono = ? WHERE id_tutor = ?');
             $stmtUp->execute([$nuevoMail, $nuevoFono, $idEditar]);
             $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
             $tipoMsg = 'success';
-        }
     }
 }
 
@@ -170,6 +163,8 @@ $tutores = $pdo->query("
                                                 <input type="tel" name="nuevo_telefono" value="<?= htmlspecialchars($t['telefono']) ?>" required style="padding:4px 6px; font-size:0.78rem; width:100px;">
                                                 <button type="submit" class="btn-mini btn-confirmar">Actualizar</button>
                                             </form>
+                                        </td>
+                                        <td>
                                             <form method="POST" onsubmit="return confirm('¿Eliminar datos de este tutor?');">
                                                 <input type="hidden" name="accion" value="eliminar">
                                                 <input type="hidden" name="id_tutor" value="<?= htmlspecialchars($t['id_tutor']) ?>">
