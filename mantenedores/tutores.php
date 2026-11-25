@@ -50,6 +50,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtDel->execute([$idEliminar]);
         $mensaje = 'Datos personales del tutor eliminados conforme a la Ley 21.719.';
         $tipoMsg = 'success';
+    } elseif ($accion === 'editar') {
+        $idEditar   = $_POST['id_tutor'] ?? '';
+        $nuevoMail  = trim($_POST['nuevo_correo'] ?? '');
+        $nuevoFono  = trim($_POST['nuevo_telefono'] ?? '');
+        if ($idEditar && $nuevoMail && $nuevoFono) {
+            $stmtUp = $pdo->prepare('UPDATE tutores SET correo = ?, telefono = ? WHERE id_tutor = ?');
+            $stmtUp->execute([$nuevoMail, $nuevoFono, $idEditar]);
+            $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
+            $tipoMsg = 'success';
+        }
     }
 }
 
@@ -153,6 +163,13 @@ $tutores = $pdo->query("
                                         <td><?= htmlspecialchars($t['correo']) ?><br><small><?= htmlspecialchars($t['telefono']) ?></small></td>
                                         <td><?= (int)$t['total_mascotas'] ?></td>
                                         <td>
+                                            <form method="POST" style="display:flex; gap:4px; margin-bottom:6px; flex-wrap:wrap;">
+                                                <input type="hidden" name="accion" value="editar">
+                                                <input type="hidden" name="id_tutor" value="<?= htmlspecialchars($t['id_tutor']) ?>">
+                                                <input type="email" name="nuevo_correo" value="<?= htmlspecialchars($t['correo']) ?>" required style="padding:4px 6px; font-size:0.78rem; width:140px;">
+                                                <input type="tel" name="nuevo_telefono" value="<?= htmlspecialchars($t['telefono']) ?>" required style="padding:4px 6px; font-size:0.78rem; width:100px;">
+                                                <button type="submit" class="btn-mini btn-confirmar">Actualizar</button>
+                                            </form>
                                             <form method="POST" onsubmit="return confirm('¿Eliminar datos de este tutor?');">
                                                 <input type="hidden" name="accion" value="eliminar">
                                                 <input type="hidden" name="id_tutor" value="<?= htmlspecialchars($t['id_tutor']) ?>">
