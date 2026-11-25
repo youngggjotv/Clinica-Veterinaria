@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = "Tutor $nombreTutor y mascota $nombreMascota registrados con éxito.";
             $tipoMsg = 'success';
         }
-    }  elseif ($accion === 'editar') {
+    }  .. elseif ($accion === 'editar') {
         $idEditar   = $_POST['id_tutor'] ?? '';
         $nuevoMail  = trim($_POST['nuevo_correo'] ?? '');
         $nuevoFono  = trim($_POST['nuevo_telefono'] ?? '');
@@ -53,9 +53,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUp->execute([$nuevoMail, $nuevoFono, $idEditar]);
             $mensaje = 'RNF-01: Datos de contacto del tutor actualizados correctamente.';
             $tipoMsg = 'success';
-    }
+        } // <-- 1. Llave de cierre agregada
+    } elseif ($accion === 'eliminar') { // <-- 2. Acción eliminar agregada
+        $idEliminar = $_POST['id_tutor'] ?? '';
+        if ($idEliminar) {
+            $stmtDelM = $pdo->prepare('DELETE FROM mascotas WHERE id_tutor = ?');
+            $stmtDelM->execute([$idEliminar]);
+
+            $stmtDelT = $pdo->prepare('DELETE FROM tutores WHERE id_tutor = ?');
+            $stmtDelT->execute([$idEliminar]);
+
+            $mensaje = 'RNF-01: Datos del tutor y sus mascotas eliminados correctamente.';
+            $tipoMsg = 'success';
+        }
     }
 }
+
 
 $tutores = $pdo->query("
     SELECT t.*, COUNT(m.id_mascota) AS total_mascotas
