@@ -32,9 +32,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $iniNuevo  = aMinutos($hora);
     $finNuevo  = $iniNuevo + $duracion;
 
-    // Regla RF-01: validar solapamiento por rango real ignorando citas Canceladas
-    $stmt = $pdo->prepare("SELECT * FROM citas WHERE id_veterinario = ? AND fecha_hora_inicio LIKE ? AND LOWER(estado) != 'cancelada'");
-    $stmt->execute([$idVet, $fecha . '%']);
+    // Regla RF-01: validar día hábil y horario de atención (Lun-Vie 09-13 / 14-18, Sáb 10-14, Dom cerrado)
+    $diaSemana = (int)date('w', strtotime($fecha)); // 0 = Domingo, 6 = Sábado
+    $fueraDeHorario = false;
+    if ($diaSemana === 0) {
+        $fueraDeHorario = true;
+    } elseif ($diaSemana === 6) {
+        $fueraDeHorario = ($iniNuevo < aMinutos('10:00') || $finNuevo > aMinutos('14:00'));
+    } else {
+        $enManana = ($iniNuevo >= aMinutos('09:00') && $finNuevo <= aMinutos('13:00'));
+        $enTarde  = ($iniNuevo >= aMinutos('14:00') && $finNuevo <= aMinutos('18:00'));
+        $fueraDeHorario = !($enManana || $enTarde);
+    }
+
+    if ($fueraDeHorario) {
+        $mensaje = 'Error (RF-01): Horario fuera de atención (Lun-Vie 09:00-13:00 / 14:00-18:00, Sáb 10:00-14:00, Dom cerrado).';
+        $tipoMsg = 'error';
+    } else {
     $existentes = $stmt->fetchAll();
 
     $hayConflicto = false;
