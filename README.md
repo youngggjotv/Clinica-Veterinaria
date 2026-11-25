@@ -25,4 +25,4 @@ Aplicación web desarrollada para el curso **Ingeniería de Software I** orienta
 * **Lenguaje Backend:** PHP 8+ (PDO)
 * **Frontend:** HTML5 y CSS3 (diseño responsivo para escritorio y móvil)
 * **Base de Datos:** MySQL (producción en InfinityFree) / SQLite (pruebas locales rápidas)
-* **Despliegue Continuo (CI/CD):** GitHub Actions conectado por FTP a InfinityFree (cada fusión en `main` actualiza automáticamente `vetagenda.ct.ws` excluyendo credenciales locales).
+* **Despliegue Continuo (CI/CD):** GitHub Actions conectado por FTP a InfinityFree (cada fusión en main actualiza automáticamente vetagenda.ct.ws excluyendo credenciales locales).
